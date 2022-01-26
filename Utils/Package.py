@@ -1,3 +1,5 @@
+import datetime
+
 """
  Package class
 
@@ -7,7 +9,7 @@
 
 class Package:
 
-    def __init__(self, package_id: int, delivery_address: str, delivery_deadline: str, delivery_city: str,
+    def __init__(self, package_id: int, delivery_address: str, delivery_deadline: datetime.time, delivery_city: str,
                  delivery_zipcode: int, package_weight: int, delivery_status: str):
         self.package_id = package_id
         self.delivery_address = delivery_address

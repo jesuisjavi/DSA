@@ -45,7 +45,19 @@ class HashTable:
             if id_package_pair[0] == package_id:
                 bucket_list.remove([id_package_pair[0], id_package_pair[1]])
 
+    def get_packages_at_the_hub(self) -> [Package]:
+        packages = []
+
+        for bucket in self.table:
+            for id_package_pair in bucket:
+                package = Package(id_package_pair[1])
+                if package.delivery_status == "At the HUB":
+                    packages.append(package)
+
+        return packages
+
     def __str__(self):
         for bucket in self.table:
             for id_package_pair in bucket:
                 print("Package Id: " + str(id_package_pair[0]), "- Package: " + str(id_package_pair[1]))
+        return ""

@@ -1,4 +1,4 @@
-import Package
+from Utils.Package import Package
 
 """
 Truck class.
