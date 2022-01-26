@@ -13,7 +13,7 @@ class PackageCluster:
 
     def add_package(self, package: Package):
         self.packages.append(package)
-        self.packages.sort(key=lambda x: x.deliver_deadline, reverse=False)
+        self.packages.sort(key=lambda x: x.delivery_deadline, reverse=False)
         if package.delivery_deadline < self.deliver_by:
             self.deliver_by = package.delivery_deadline
 

@@ -50,7 +50,7 @@ class HashTable:
 
         for bucket in self.table:
             for id_package_pair in bucket:
-                package = Package(id_package_pair[1])
+                package = id_package_pair[1]
                 if package.delivery_status == "At the HUB":
                     packages.append(package)
 

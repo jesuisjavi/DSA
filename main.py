@@ -9,13 +9,10 @@ from Utils.PackageCluster import PackageCluster
 
 table = HashTable()
 load_package_data(table)
-print(table)
 
 addresses = []
 distances = []
 load_address_and_distance_data(addresses, distances)
-
-package_clusters = []
 
 
 def distance_between(address1: str, address2: str) -> float:
@@ -62,6 +59,7 @@ def set_package_clusters():
 
     while True:
         package_id = int(input('Enter package ID (Type -1 to skip): ').strip().lower())
+        print(package_id)
         if package_id == -1:
             break
 
@@ -114,11 +112,7 @@ def set_package_clusters():
     return clusters
 
 
-def truck_load_packages(trucks: [Truck]):
-    clusters = set_package_clusters()
-
-    # Order clusters by delivery deadline
-    clusters.sort(key=lambda x: x.deliver_by, reverse=False)
+def truck_load_packages(clusters, trucks: [Truck]):
 
     for truck in trucks:
         packages = 0
@@ -126,19 +120,24 @@ def truck_load_packages(trucks: [Truck]):
 
         while cluster_index < len(clusters) and packages < 16:
             cluster = clusters[cluster_index]
-            if not cluster.is_assigned():
-                if cluster.truck_number != truck.truck_id or not cluster.is_ready or len(
-                        cluster.packages) > 16 - packages:
+            print(cluster)
+            if not cluster.is_assigned:
+                print("Assigning cluster")
+                if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or not cluster.is_ready \
+                        or len(cluster.packages) > 16 - packages:
                     continue
                 else:
+                    cluster.is_assigned = True
                     packages = packages + len(cluster.packages)
                     for package in cluster.packages:
                         package.delivery_status = "En route"
                         truck.load_package(package)
-                cluster_index = cluster_index + 1
+                    print("Cluster assigned " + str(cluster))
+            cluster_index = cluster_index + 1
+            print(cluster_index)
 
 
-def truck_deliver_packages(truck: Truck):
+def truck_deliver_packages(truck: Truck) -> float:
     truck_time = datetime.time(8, 0)
     truck_address = "HUB"
     miles = 0
@@ -149,10 +148,38 @@ def truck_deliver_packages(truck: Truck):
     for package in truck.cargo:
         miles = miles + distance_between(truck_address, package.delivery_address)
         time_to_deliver = distance_between(truck_address, package.delivery_address) / 18
-        truck_time = truck_time + datetime.timedelta(0, time_to_deliver * 60)
+        truck_time = (datetime.datetime(2022, 1, 26, truck_time.hour, truck_time.minute) + datetime.timedelta(seconds=time_to_deliver * 60 * 60)).time()
         package.delivery_status = "Delivered"
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
     print("Truck " + str(truck.truck_id) + ": All packages have been delivered...")
     print("It is " + str(truck_time))
     print("I traveled " + str(miles) + " miles")
+
+    return miles
+
+
+def deliver_packages():
+    trucks = [Truck(1), Truck(2)]
+
+    total_mileage = 0
+
+    # Set clusters
+    clusters = set_package_clusters()
+    print("Clusters set")
+    print(clusters)
+
+    # Order clusters by delivery deadline
+    clusters.sort(key=lambda x: x.deliver_by, reverse=False)
+    print("Clusters sorted")
+
+    truck_load_packages(clusters, trucks)
+    print("Trucks loaded")
+
+    for truck in trucks:
+        total_mileage = total_mileage + truck_deliver_packages(truck)
+
+    print(total_mileage)
+
+
+deliver_packages()
