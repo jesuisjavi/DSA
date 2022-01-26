@@ -7,11 +7,13 @@ class PackageCluster:
     def __init__(self):
         self.packages = []
         self.truck_number = None
-        self.package_is_ready = True
+        self.is_ready = True
         self.deliver_by = datetime.time(23, 59)
+        self.is_assigned = False
 
     def add_package(self, package: Package):
         self.packages.append(package)
+        self.packages.sort(key=lambda x: x.deliver_deadline, reverse=False)
         if package.delivery_deadline < self.deliver_by:
             self.deliver_by = package.delivery_deadline
 

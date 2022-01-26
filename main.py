@@ -114,5 +114,45 @@ def set_package_clusters():
     return clusters
 
 
-def truck_load_packages():
+def truck_load_packages(trucks: [Truck]):
     clusters = set_package_clusters()
+
+    # Order clusters by delivery deadline
+    clusters.sort(key=lambda x: x.deliver_by, reverse=False)
+
+    for truck in trucks:
+        packages = 0
+        cluster_index = 0
+
+        while cluster_index < len(clusters) and packages < 16:
+            cluster = clusters[cluster_index]
+            if not cluster.is_assigned():
+                if cluster.truck_number != truck.truck_id or not cluster.is_ready or len(
+                        cluster.packages) > 16 - packages:
+                    continue
+                else:
+                    packages = packages + len(cluster.packages)
+                    for package in cluster.packages:
+                        package.delivery_status = "En route"
+                        truck.load_package(package)
+                cluster_index = cluster_index + 1
+
+
+def truck_deliver_packages(truck: Truck):
+    truck_time = datetime.time(8, 0)
+    truck_address = "HUB"
+    miles = 0
+
+    print("Truck " + str(truck.truck_id) + ": Starting route...")
+    print("It is " + str(truck_time))
+
+    for package in truck.cargo:
+        miles = miles + distance_between(truck_address, package.delivery_address)
+        time_to_deliver = distance_between(truck_address, package.delivery_address) / 18
+        truck_time = truck_time + datetime.timedelta(0, time_to_deliver * 60)
+        package.delivery_status = "Delivered"
+        print("Delivered: " + str(package) + " At: " + str(truck_time))
+
+    print("Truck " + str(truck.truck_id) + ": All packages have been delivered...")
+    print("It is " + str(truck_time))
+    print("I traveled " + str(miles) + " miles")
