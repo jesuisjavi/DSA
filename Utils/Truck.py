@@ -14,3 +14,4 @@ class Truck:
 
     def load(self, package: Package):
         self.cargo.append(package)
+
