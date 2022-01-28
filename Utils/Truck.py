@@ -14,6 +14,7 @@ class Truck:
         self.cargo = []
         self.truck_id = truck_id
         self.truck_time = datetime.time(8, 0)
+        self.truck_address = "HUB"
 
     def load_package(self, package: Package):
         self.cargo.append(package)

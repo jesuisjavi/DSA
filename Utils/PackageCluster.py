@@ -8,6 +8,7 @@ class PackageCluster:
         self.packages = []
         self.truck_number = None
         self.is_ready = True
+        self.ready_time = datetime.time(8, 0)
         self.deliver_by = datetime.time(23, 59)
         self.is_assigned = False
 
@@ -25,5 +26,5 @@ class PackageCluster:
         return False
 
     def __str__(self):
-        return "%s, %s, %s, %s, %s" % (self.packages, self.truck_number, self.is_ready,
-                                       self.deliver_by, self.is_assigned)
+        return "%s, %s, %s, %s, %s, %s" % (self.packages, self.truck_number, self.is_ready, self.ready_time,
+                                           self.deliver_by, self.is_assigned)
