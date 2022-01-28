@@ -130,53 +130,63 @@ def set_package_clusters():
     return clusters
 
 
-def truck_load_packages(clusters, trucks: [Truck]):
-    truck_index = 0
+def truck_load_packages(clusters, trucks: [Truck], amount):
+
     packages = 0
 
     for cluster in clusters:
-        truck = trucks[truck_index]
+        for truck_index in range(len(trucks)):
+            truck = trucks[truck_index]
 
-        if not cluster.is_assigned:
-            if not cluster.is_ready and cluster.ready_time <= truck.truck_time:
-                cluster.is_ready = True
+            if not cluster.is_assigned:
+                if not cluster.is_ready and cluster.ready_time <= truck.truck_time:
+                    cluster.is_ready = True
 
-            if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or not cluster.is_ready \
-                    or len(cluster.packages) > 16 - len(truck.cargo):
-                continue
-            else:
-                cluster.is_assigned = True
-                packages = packages + len(cluster.packages)
-                for package in cluster.packages:
-                    package.delivery_status = "En route"
-                    truck.load_package(package)
+                if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or len(cluster.packages) > amount - len(truck.cargo):
+                    continue
 
-                if truck_index == len(trucks) - 1:
-                    truck_index = 0
+                if not cluster.is_ready:
+                    break
                 else:
-                    truck_index = truck_index + 1
+                    cluster.is_assigned = True
+                    packages = packages + len(cluster.packages)
+                    for package in cluster.packages:
+                        package.delivery_status = "En route"
+                        truck.load_package(package)
+                    break
 
 
 def truck_deliver_packages(truck: Truck) -> float:
     truck_time = datetime.time(8, 0)
-    truck_address = "HUB"
     miles = 0
 
     print("Truck " + str(truck.truck_id) + ": Starting route...")
     print("It is " + str(truck.truck_time))
 
     for i in range(len(truck.cargo)):
-        package = package_with_min_distance_from(truck_address, truck.cargo)
-        miles = miles + distance_between(truck_address, package.delivery_address)
-        time_to_deliver = distance_between(truck_address, package.delivery_address) / 18
-        print(distance_between(truck_address, package.delivery_address))
+        # Deliver trucks in order of delivery deadline and distance within those with the same delivery deadline time
+
+        min_time = datetime.time(23, 59)
+        for package in truck.cargo:
+            if package.delivery_deadline < min_time and package.delivery_status == "En route":
+                min_time = package.delivery_deadline
+        packages = []
+        for package in truck.cargo:
+            if package.delivery_deadline == min_time and package.delivery_status == "En route":
+                packages.append(package)
+
+        package = package_with_min_distance_from(truck.truck_address, packages)
+        miles = miles + distance_between(truck.truck_address, package.delivery_address)
+        time_to_deliver = distance_between(truck.truck_address, package.delivery_address) / 18
+        print(distance_between(truck.truck_address, package.delivery_address))
         print(time_to_deliver)
-        truck_time = (datetime.datetime(2022, 1, 26, truck.truck_time.hour, truck.truck_time.minute, truck.truck_time.second) + datetime.timedelta(
+        truck_time = (datetime.datetime(2022, 1, 26, truck.truck_time.hour, truck.truck_time.minute,
+                                        truck.truck_time.second) + datetime.timedelta(
             seconds=time_to_deliver * 60 * 60)).time()
         print(truck.truck_time)
         truck.truck_time = truck_time
         package.delivery_status = "Delivered"
-        truck_address = package.delivery_address
+        truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
     print("Truck " + str(truck.truck_id) + ": All packages have been delivered...")
@@ -202,7 +212,8 @@ def deliver_packages():
     # Order clusters by delivery deadline
     clusters.sort(key=lambda x: x.deliver_by, reverse=False)
 
-    truck_load_packages(clusters, trucks)
+    truck_load_packages(clusters, [trucks[0]], 8)
+    truck_load_packages(clusters, [trucks[1]], 16)
 
     for truck in trucks:
         total_mileage = total_mileage + truck_deliver_packages(truck)
@@ -211,26 +222,30 @@ def deliver_packages():
     while total_packages_delivered < total_packages:
         if trucks[0].truck_time < trucks[1].truck_time:
             trucks[0].reset_truck()
-            truck_load_packages(clusters, [trucks[0]])
+            truck_load_packages(clusters, [trucks[0]], 16)
             miles_to_hub = distance_between(trucks[0].truck_address, "HUB")
             total_mileage = total_mileage + miles_to_hub
             print("Truck 1: Driving to the HUB to pick up more packages...")
             time_to_deliver = distance_between(trucks[0].truck_address, "HUB") / 18
             truck_time = (
-                        datetime.datetime(2022, 1, 26, trucks[0].truck_time.hour, trucks[0].truck_time.minute, trucks[0].truck_time.second) + datetime.timedelta(seconds=time_to_deliver * 60 * 60)).time()
+                    datetime.datetime(2022, 1, 26, trucks[0].truck_time.hour, trucks[0].truck_time.minute,
+                                      trucks[0].truck_time.second) + datetime.timedelta(
+                seconds=time_to_deliver * 60 * 60)).time()
             trucks[0].truck_time = truck_time
             trucks[0].truck_address = "HUB"
             total_mileage = total_mileage + truck_deliver_packages(trucks[0])
             total_packages_delivered = total_packages_delivered + len(trucks[0].cargo)
         else:
             trucks[1].reset_truck()
-            truck_load_packages(clusters, [trucks[1]])
+            truck_load_packages(clusters, [trucks[1]], 16)
             miles_to_hub = distance_between(trucks[1].truck_address, "HUB")
             total_mileage = total_mileage + miles_to_hub
             print("Truck 2: Driving to the HUB to pick up more packages...")
             time_to_deliver = distance_between(trucks[1].truck_address, "HUB") / 18
             truck_time = (
-                    datetime.datetime(2022, 1, 26, trucks[1].truck_time.hour, trucks[1].truck_time.minute, trucks[1].truck_time.second) + datetime.timedelta(seconds=time_to_deliver * 60 * 60)).time()
+                    datetime.datetime(2022, 1, 26, trucks[1].truck_time.hour, trucks[1].truck_time.minute,
+                                      trucks[1].truck_time.second) + datetime.timedelta(
+                seconds=time_to_deliver * 60 * 60)).time()
             trucks[1].truck_time = truck_time
             trucks[1].truck_address = "HUB"
             total_mileage = total_mileage + truck_deliver_packages(trucks[1])
