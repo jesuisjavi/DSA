@@ -23,3 +23,7 @@ class PackageCluster:
                 return True
 
         return False
+
+    def __str__(self):
+        return "%s, %s, %s, %s, %s" % (self.packages, self.truck_number, self.is_ready,
+                                       self.deliver_by, self.is_assigned)

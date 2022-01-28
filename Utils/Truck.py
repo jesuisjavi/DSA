@@ -1,4 +1,5 @@
 from Utils.Package import Package
+import datetime
 
 """
 Truck class.
@@ -12,7 +13,10 @@ class Truck:
     def __init__(self, truck_id: int):
         self.cargo = []
         self.truck_id = truck_id
+        self.truck_time = datetime.time(8, 0)
 
     def load_package(self, package: Package):
         self.cargo.append(package)
 
+    def reset_truck(self):
+        self.cargo = []
