@@ -178,8 +178,8 @@ def truck_deliver_packages(truck: Truck) -> float:
         package = package_with_min_distance_from(truck.truck_address, packages)
         miles = miles + distance_between(truck.truck_address, package.delivery_address)
         time_to_deliver = distance_between(truck.truck_address, package.delivery_address) / 18
-        print(distance_between(truck.truck_address, package.delivery_address))
-        print(time_to_deliver)
+        print("The distance from my present address to the nearest package delivery location is " + str(distance_between(truck.truck_address, package.delivery_address)) + " miles.")
+        print("It will take me " + str(time_to_deliver * 60) + " minutes to arrive.")
         truck_time = (datetime.datetime(2022, 1, 26, truck.truck_time.hour, truck.truck_time.minute,
                                         truck.truck_time.second) + datetime.timedelta(
             seconds=time_to_deliver * 60 * 60)).time()
@@ -189,9 +189,10 @@ def truck_deliver_packages(truck: Truck) -> float:
         truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
-    print("Truck " + str(truck.truck_id) + ": All packages have been delivered...")
+    print("Truck " + str(truck.truck_id) + ": All packages from this load have been delivered...")
     print("It is " + str(truck.truck_time))
     print("I traveled " + str(miles) + " miles")
+    print()
 
     return miles
 
