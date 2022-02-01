@@ -1,5 +1,5 @@
 """
-@uthor: Javier Perez Leon
+@author: Javier Perez Leon
 Student ID: #009460534
 """
 
@@ -154,6 +154,7 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
                     for cluster_package in cluster.packages:
                         package = table.search(cluster_package.package_id)
                         package.delivery_status = "En route"
+                        package.left_hub_at = truck.truck_time
                         truck.load_package(package)
                     break
 
@@ -187,31 +188,6 @@ def truck_deliver_packages(truck: Truck) -> float:
             seconds=time_to_deliver * 60 * 60)).time()
         print(truck.truck_time)
         truck.truck_time = truck_time
-
-        if datetime.time(8, 35) <= truck_time <= datetime.time(9, 25):
-            print()
-            print("It is: " + str(truck_time))
-            for i in range(40):
-                pck = table.search(i + 1)
-                print(pck)
-            print()
-
-        if datetime.time(9, 35) <= truck_time <= datetime.time(10, 25):
-            print()
-            print("It is: " + str(truck_time))
-            for i in range(40):
-                pck = table.search(i + 1)
-                print(pck)
-            print()
-
-        if datetime.time(12, 3) <= truck_time <= datetime.time(1, 12):
-            print()
-            print("It is: " + str(truck_time))
-            for i in range(40):
-                pck = table.search(i + 1)
-                print(pck)
-            print()
-
         package.delivery_status = "Delivered"
         package.delivered_at = truck.truck_time
         truck.truck_address = package.delivery_address
@@ -285,15 +261,11 @@ def deliver_packages():
     print(total_mileage)
 
 
+def get_total_mileage_at(time: datetime.time):
+    print()
+
 
 deliver_packages()
-
-print()
-print("It is: " + str(datetime.time(12, 49)))
-for i in range(40):
-    pck = table.search(i + 1)
-    print(pck)
-print()
 
 while True:
     package_id = int(input('Enter package ID (Type -1 to end program): ').strip().lower())
@@ -301,4 +273,23 @@ while True:
     if package_id == -1:
         break
 
+    time = input('Enter time in the format HH:MM: ').strip().lower()
+    snapshot_time = datetime.time(int(time[0:2]), int(time[3:5]))
 
+    package = table.search(package_id)
+
+    if package is not None:
+        if snapshot_time < package.left_hub_at:
+            temp_package = Package(package.package_id, package.delivery_address, package.delivery_deadline,
+                                   package.delivery_city, package.delivery_zipcode, package.package_weight,
+                                   "At the HUB")
+            print(temp_package)
+        elif package.left_hub_at <= snapshot_time < package.delivered_at:
+            temp_package = Package(package.package_id, package.delivery_address, package.delivery_deadline,
+                                   package.delivery_city, package.delivery_zipcode, package.package_weight,
+                                   "En route")
+            print(temp_package)
+        else:
+            print(package)
+    else:
+        print("There is no package with such Id at the HUB.")

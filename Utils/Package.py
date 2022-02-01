@@ -18,6 +18,7 @@ class Package:
         self.delivery_zipcode = delivery_zipcode
         self.package_weight = package_weight
         self.delivery_status = delivery_status
+        self.left_hub_at = None
         self.delivered_at = None
 
     def __str__(self):
