@@ -18,8 +18,9 @@ class Package:
         self.delivery_zipcode = delivery_zipcode
         self.package_weight = package_weight
         self.delivery_status = delivery_status
+        self.delivered_at = None
 
     def __str__(self):
-        return "%s, %s, %s, %s, %s, %s, %s" % (self.package_id, self.delivery_address, self.delivery_city,
+        return "%s, %s, %s, %s, %s, %s, %s, %s" % (self.package_id, self.delivery_address, self.delivery_city,
                                                self.delivery_zipcode, self.delivery_deadline, self.package_weight,
-                                               self.delivery_status)
+                                               self.delivery_status, self.delivered_at)

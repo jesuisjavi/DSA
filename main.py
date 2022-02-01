@@ -3,7 +3,6 @@
 Student ID: #009460534
 """
 
-
 import datetime
 
 from Utils.HashTable import HashTable
@@ -134,7 +133,6 @@ def set_package_clusters():
 
 
 def truck_load_packages(clusters, trucks: [Truck], amount):
-
     for cluster in clusters:
         for truck_index in range(len(trucks)):
             truck = trucks[truck_index]
@@ -146,7 +144,8 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
                     else:
                         break
 
-                if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or len(cluster.packages) > amount - len(truck.cargo):
+                if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or len(
+                        cluster.packages) > amount - len(truck.cargo):
                     continue
 
                 else:
@@ -180,14 +179,41 @@ def truck_deliver_packages(truck: Truck) -> float:
         package = package_with_min_distance_from(truck.truck_address, packages)
         miles = miles + distance_between(truck.truck_address, package.delivery_address)
         time_to_deliver = distance_between(truck.truck_address, package.delivery_address) / 18
-        print("The distance from my present address to the nearest package delivery location is " + str(distance_between(truck.truck_address, package.delivery_address)) + " miles.")
+        print("The distance from my present address to the nearest package delivery location is " + str(
+            distance_between(truck.truck_address, package.delivery_address)) + " miles.")
         print("It will take me " + str(time_to_deliver * 60) + " minutes to arrive.")
         truck_time = (datetime.datetime(2022, 1, 26, truck.truck_time.hour, truck.truck_time.minute,
                                         truck.truck_time.second) + datetime.timedelta(
             seconds=time_to_deliver * 60 * 60)).time()
         print(truck.truck_time)
         truck.truck_time = truck_time
+
+        if datetime.time(8, 35) <= truck_time <= datetime.time(9, 25):
+            print()
+            print("It is: " + str(truck_time))
+            for i in range(40):
+                pck = table.search(i + 1)
+                print(pck)
+            print()
+
+        if datetime.time(9, 35) <= truck_time <= datetime.time(10, 25):
+            print()
+            print("It is: " + str(truck_time))
+            for i in range(40):
+                pck = table.search(i + 1)
+                print(pck)
+            print()
+
+        if datetime.time(12, 3) <= truck_time <= datetime.time(1, 12):
+            print()
+            print("It is: " + str(truck_time))
+            for i in range(40):
+                pck = table.search(i + 1)
+                print(pck)
+            print()
+
         package.delivery_status = "Delivered"
+        package.delivered_at = truck.truck_time
         truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
@@ -259,4 +285,20 @@ def deliver_packages():
     print(total_mileage)
 
 
+
 deliver_packages()
+
+print()
+print("It is: " + str(datetime.time(12, 49)))
+for i in range(40):
+    pck = table.search(i + 1)
+    print(pck)
+print()
+
+while True:
+    package_id = int(input('Enter package ID (Type -1 to end program): ').strip().lower())
+    print(package_id)
+    if package_id == -1:
+        break
+
+
