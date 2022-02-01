@@ -19,6 +19,8 @@ addresses = []
 distances = []
 load_address_and_distance_data(addresses, distances)
 
+time_mileage = []
+
 
 def distance_between(address1: str, address2: str) -> float:
     index1 = get_address_index(address1)
@@ -159,7 +161,7 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
                     break
 
 
-def truck_deliver_packages(truck: Truck) -> float:
+def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
     miles = 0
 
     print("Truck " + str(truck.truck_id) + ": Starting route...")
@@ -190,6 +192,7 @@ def truck_deliver_packages(truck: Truck) -> float:
         truck.truck_time = truck_time
         package.delivery_status = "Delivered"
         package.delivered_at = truck.truck_time
+        time_mileage.append([package.package_id, total_mileage + miles])
         truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
@@ -204,10 +207,10 @@ def truck_deliver_packages(truck: Truck) -> float:
 def deliver_packages():
     trucks = [Truck(1), Truck(2)]
 
-    total_mileage = 0
-
     total_packages = 40
     total_packages_delivered = 0
+
+    total_mileage = 0
 
     # Set clusters
     clusters = set_package_clusters()
@@ -221,7 +224,7 @@ def deliver_packages():
     truck_load_packages(clusters, [trucks[1]], 16)
 
     for truck in trucks:
-        total_mileage = total_mileage + truck_deliver_packages(truck)
+        total_mileage = total_mileage + truck_deliver_packages(truck, total_mileage)
         total_packages_delivered = total_packages_delivered + len(truck.cargo)
 
     while total_packages_delivered < total_packages:
@@ -238,7 +241,7 @@ def deliver_packages():
                 seconds=time_to_deliver * 60 * 60)).time()
             trucks[0].truck_time = truck_time
             trucks[0].truck_address = "HUB"
-            total_mileage = total_mileage + truck_deliver_packages(trucks[0])
+            total_mileage = total_mileage + truck_deliver_packages(trucks[0], total_mileage)
             total_packages_delivered = total_packages_delivered + len(trucks[0].cargo)
         else:
             trucks[1].reset_truck()
@@ -253,7 +256,7 @@ def deliver_packages():
                 seconds=time_to_deliver * 60 * 60)).time()
             trucks[1].truck_time = truck_time
             trucks[1].truck_address = "HUB"
-            total_mileage = total_mileage + truck_deliver_packages(trucks[1])
+            total_mileage = total_mileage + truck_deliver_packages(trucks[1], total_mileage)
             total_packages_delivered = total_packages_delivered + len(trucks[1].cargo)
 
     print(total_packages_delivered)
@@ -261,8 +264,15 @@ def deliver_packages():
     print(total_mileage)
 
 
-def get_total_mileage_at(time: datetime.time):
-    print()
+def get_total_mileage_at(at_time: datetime.time, at_time: datetime.time):
+    max_mileage_before_or_at_time = 0
+
+    for pair in time_mileage:
+        other_package = table.search(pair[0])
+        if other_package.delivered_at <= at_time and pair[1] > max_mileage_before_or_at_time:
+            max_mileage_before_or_at_time = pair[1]
+
+    return  max_mileage_before_or_at_time
 
 
 deliver_packages()
@@ -276,20 +286,25 @@ while True:
     time = input('Enter time in the format HH:MM: ').strip().lower()
     snapshot_time = datetime.time(int(time[0:2]), int(time[3:5]))
 
-    package = table.search(package_id)
+    pckg = table.search(package_id)
 
-    if package is not None:
-        if snapshot_time < package.left_hub_at:
-            temp_package = Package(package.package_id, package.delivery_address, package.delivery_deadline,
-                                   package.delivery_city, package.delivery_zipcode, package.package_weight,
+    if pckg is not None:
+        if snapshot_time < pckg.left_hub_at:
+            temp_package = Package(pckg.package_id, pckg.delivery_address, pckg.delivery_deadline,
+                                   pckg.delivery_city, pckg.delivery_zipcode, pckg.package_weight,
                                    "At the HUB")
             print(temp_package)
-        elif package.left_hub_at <= snapshot_time < package.delivered_at:
-            temp_package = Package(package.package_id, package.delivery_address, package.delivery_deadline,
-                                   package.delivery_city, package.delivery_zipcode, package.package_weight,
+            print("Total mileage driven by all trucks at this time is: " + str(get_total_mileage_at(temp_package, snapshot_time)))
+        elif pckg.left_hub_at <= snapshot_time < pckg.delivered_at:
+            temp_package = Package(pckg.package_id, pckg.delivery_address, pckg.delivery_deadline,
+                                   pckg.delivery_city, pckg.delivery_zipcode, pckg.package_weight,
                                    "En route")
             print(temp_package)
+            print("Total mileage driven by all trucks at this time is: " + str(
+                get_total_mileage_at(temp_package, snapshot_time)))
         else:
-            print(package)
+            print(pckg)
+            print("Total mileage driven by all trucks at this time is: " + str(
+                get_total_mileage_at(pckg, snapshot_time)))
     else:
         print("There is no package with such Id at the HUB.")
