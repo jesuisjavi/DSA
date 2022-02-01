@@ -1,3 +1,9 @@
+"""
+@uthor: Javier Perez Leon
+Student ID: #009460534
+"""
+
+
 import datetime
 
 from Utils.HashTable import HashTable
@@ -50,8 +56,6 @@ def package_with_min_distance_from(from_address: str, truck_packages: []) -> Pac
 def set_package_clusters():
     clusters = []
 
-    packages_at_the_hub = table.get_packages_at_the_hub()
-
     print(' ****************** Add Package Constraints **************** ')
 
     while True:
@@ -60,11 +64,7 @@ def set_package_clusters():
         if package_id == -1:
             break
 
-        this_package = None
-        for package in packages_at_the_hub:
-            if package.package_id == package_id:
-                this_package = package
-                break
+        this_package = table.search(package_id)
 
         if this_package is not None:
             truck_number = int(input('This package must be delivered by truck number (Type -1 to skip): ')
@@ -99,8 +99,9 @@ def set_package_clusters():
             if truck_number != -1:
                 cluster.truck_number = truck_number
             if len(with_packages) > 0:
-                for package in packages_at_the_hub:
-                    if with_packages.count(package.package_id) > 0:
+                for package_id in with_packages:
+                    package = table.search(package_id)
+                    if package is not None:
                         cluster.add_package(package)
             if is_ready == 0:
                 cluster.is_ready = False
@@ -111,8 +112,10 @@ def set_package_clusters():
             print("There is no package with such Id at the HUB.")
 
     # Add individual package to clusters
-    for package in packages_at_the_hub:
+    # O(n)
+    for package in table.get_packages_at_the_hub():
         already_in_cluster = False
+        # O(n)
         for cluster in clusters:
             if cluster.contains_package_with_id(package.package_id):
                 already_in_cluster = True
@@ -132,32 +135,31 @@ def set_package_clusters():
 
 def truck_load_packages(clusters, trucks: [Truck], amount):
 
-    packages = 0
-
     for cluster in clusters:
         for truck_index in range(len(trucks)):
             truck = trucks[truck_index]
 
             if not cluster.is_assigned:
-                if not cluster.is_ready and cluster.ready_time <= truck.truck_time:
-                    cluster.is_ready = True
+                if not cluster.is_ready:
+                    if cluster.ready_time <= truck.truck_time:
+                        cluster.is_ready = True
+                    else:
+                        break
 
                 if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or len(cluster.packages) > amount - len(truck.cargo):
                     continue
 
-                if not cluster.is_ready:
-                    break
                 else:
                     cluster.is_assigned = True
-                    packages = packages + len(cluster.packages)
-                    for package in cluster.packages:
+
+                    for cluster_package in cluster.packages:
+                        package = table.search(cluster_package.package_id)
                         package.delivery_status = "En route"
                         truck.load_package(package)
                     break
 
 
 def truck_deliver_packages(truck: Truck) -> float:
-    truck_time = datetime.time(8, 0)
     miles = 0
 
     print("Truck " + str(truck.truck_id) + ": Starting route...")

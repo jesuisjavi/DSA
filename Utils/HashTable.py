@@ -5,7 +5,7 @@ Chaining Hashtable class.
 
 Will hold the packages to be delivered on a given day.
 
-Size by default: 50
+Size by default: 52
 
 References: https://westerngovernorsuniversity-my.sharepoint.com/personal/cemal_tepe_wgu_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fcemal%5Ftepe%5Fwgu%5Fedu%2FDocuments%2FMyDocs%2FC950%2FWebinar%2FC950%20%2D%20Webinar%2D1%20%2D%20Let%27s%20Go%20Hashing%2Epdf&parent=%2Fpersonal%2Fcemal%5Ftepe%5Fwgu%5Fedu%2FDocuments%2FMyDocs%2FC950%2FWebinar
 """
@@ -13,7 +13,7 @@ References: https://westerngovernorsuniversity-my.sharepoint.com/personal/cemal_
 
 class HashTable:
 
-    def __init__(self, size=50):
+    def __init__(self, size=52):
         self.table = []
         for i in range(size):
             self.table.append([])
