@@ -264,7 +264,7 @@ def deliver_packages():
     print(total_mileage)
 
 
-def get_total_mileage_at(at_time: datetime.time, at_time: datetime.time):
+def get_total_mileage_at(at_time: datetime.time):
     max_mileage_before_or_at_time = 0
 
     for pair in time_mileage:
@@ -272,7 +272,7 @@ def get_total_mileage_at(at_time: datetime.time, at_time: datetime.time):
         if other_package.delivered_at <= at_time and pair[1] > max_mileage_before_or_at_time:
             max_mileage_before_or_at_time = pair[1]
 
-    return  max_mileage_before_or_at_time
+    return max_mileage_before_or_at_time
 
 
 deliver_packages()
@@ -294,17 +294,17 @@ while True:
                                    pckg.delivery_city, pckg.delivery_zipcode, pckg.package_weight,
                                    "At the HUB")
             print(temp_package)
-            print("Total mileage driven by all trucks at this time is: " + str(get_total_mileage_at(temp_package, snapshot_time)))
+            print("Total mileage driven by all trucks until this time is: " + str(get_total_mileage_at(snapshot_time)))
         elif pckg.left_hub_at <= snapshot_time < pckg.delivered_at:
             temp_package = Package(pckg.package_id, pckg.delivery_address, pckg.delivery_deadline,
                                    pckg.delivery_city, pckg.delivery_zipcode, pckg.package_weight,
                                    "En route")
             print(temp_package)
-            print("Total mileage driven by all trucks at this time is: " + str(
-                get_total_mileage_at(temp_package, snapshot_time)))
+            print("Total mileage driven by all trucks until this time is: " + str(
+                get_total_mileage_at(snapshot_time)))
         else:
             print(pckg)
-            print("Total mileage driven by all trucks at this time is: " + str(
-                get_total_mileage_at(pckg, snapshot_time)))
+            print("Total mileage driven by all trucks until this time is: " + str(
+                get_total_mileage_at(snapshot_time)))
     else:
         print("There is no package with such Id at the HUB.")
