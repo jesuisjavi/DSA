@@ -16,8 +16,10 @@ class Truck:
         self.truck_time = datetime.time(8, 0)
         self.truck_address = "HUB"
 
+    # Loads packages into truck's cargo
     def load_package(self, package: Package):
         self.cargo.append(package)
 
+    # Resets truck to start loading it
     def reset_truck(self):
         self.cargo = []

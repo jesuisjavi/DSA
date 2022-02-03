@@ -1,6 +1,12 @@
 from Utils.Package import Package
 import datetime
 
+"""
+PackageCluster class.
+
+Represents a Package cluster. These packages mus be delivered together
+"""
+
 
 class PackageCluster:
 
@@ -12,6 +18,7 @@ class PackageCluster:
         self.deliver_by = datetime.time(23, 59)
         self.is_assigned = False
 
+    # Adds a package to the cluster
     def add_package(self, package: Package):
         cluster_package = ClusterPackage(package.package_id, package.delivery_deadline)
         self.packages.append(cluster_package)
@@ -19,6 +26,7 @@ class PackageCluster:
         if package.delivery_deadline < self.deliver_by:
             self.deliver_by = package.delivery_deadline
 
+    # Determines if package is within this cluster
     def contains_package_with_id(self, package_id) -> bool:
         for cluster_package in self.packages:
             if cluster_package.package_id == package_id:
