@@ -290,6 +290,8 @@ def deliver_packages():
 
     print("Total mileage driven by all trucks: " + str(total_mileage))
 
+    print()
+
 
 # Determine the mileage driven at a specific time of the day
 def get_total_mileage_at(at_time: datetime.time):
