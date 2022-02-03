@@ -4,6 +4,7 @@ import csv
 import datetime
 
 
+# Loads package data from WGUPS Package File.csv
 def load_package_data(table: HashTable):
     with open('Utils/WGUPS Package File.csv') as packages_file:
         packages = csv.reader(packages_file, delimiter=',')

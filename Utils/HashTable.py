@@ -45,6 +45,7 @@ class HashTable:
             if id_package_pair[0] == package_id:
                 bucket_list.remove([id_package_pair[0], id_package_pair[1]])
 
+    # retrieves all packages that are at the HUB
     def get_packages_at_the_hub(self) -> [Package]:
         packages = []
 

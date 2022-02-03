@@ -1,6 +1,7 @@
 import csv
 
 
+# Load address and distance package from WGUPS Distance Table.csv
 def load_address_and_distance_data(address_data: [], distance_data: []):
 
     with open('Utils/WGUPS Distance Table.csv') as distances_file:
