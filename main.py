@@ -12,16 +12,20 @@ from Utils.Truck import Truck
 from Utils.Package import Package
 from Utils.PackageCluster import PackageCluster
 
+# Load Package data from file into Hashtable
 table = HashTable()
 load_package_data(table)
 
+# load addresses and distance data from file
 addresses = []
 distances = []
 load_address_and_distance_data(addresses, distances)
 
+# This list will keep the total mileage driven for each package when it is delivered
 time_mileage = []
 
 
+# Calculates the distance between two addresses
 def distance_between(address1: str, address2: str) -> float:
     index1 = get_address_index(address1)
     index2 = get_address_index(address2)
@@ -31,6 +35,7 @@ def distance_between(address1: str, address2: str) -> float:
     return distances[index1][index2]
 
 
+# Gets index from address in the distance matrix
 def get_address_index(address: str) -> int:
     for i in range(len(addresses)):
         if addresses[i][0] == address:
@@ -39,6 +44,7 @@ def get_address_index(address: str) -> int:
     return -1
 
 
+# Determines the package that is closer to the provided address from those in the truck's cargo
 def package_with_min_distance_from(from_address: str, truck_packages: []) -> Package:
     min_distance = 1000
     min_distance_package = None
@@ -54,6 +60,7 @@ def package_with_min_distance_from(from_address: str, truck_packages: []) -> Pac
     return min_distance_package
 
 
+# Sets package clusters by asking the user to enter constraints.
 def set_package_clusters():
     clusters = []
 
@@ -68,9 +75,11 @@ def set_package_clusters():
         this_package = table.search(package_id)
 
         if this_package is not None:
+            # Truck number where the package needs to be delivered
             truck_number = int(input('This package must be delivered by truck number (Type -1 to skip): ')
                                .strip().lower())
 
+            # packages that must be delivered together with the present package
             with_packages = []
             while True:
                 with_package = int(input('This package must be delivered with the package with Id (Type -1 to skip): ')
@@ -80,6 +89,8 @@ def set_package_clusters():
                 else:
                     break
 
+            # If package is not ready, the time at which it will be ready is needed. The address of the package
+            # can be changed as well
             is_ready = int(input('Is this package ready to leave the HUB? Type 1 for YES, 0 for NO, -1 to skip: ')
                            .strip().lower())
 
@@ -113,10 +124,10 @@ def set_package_clusters():
             print("There is no package with such Id at the HUB.")
 
     # Add individual package to clusters
-    # O(n)
+    # Get all packages
     for package in table.get_packages_at_the_hub():
         already_in_cluster = False
-        # O(n)
+
         for cluster in clusters:
             if cluster.contains_package_with_id(package.package_id):
                 already_in_cluster = True
@@ -128,12 +139,10 @@ def set_package_clusters():
             cluster.add_package(package)
             clusters.append(cluster)
 
-    for cluster in clusters:
-        print(cluster)
-
     return clusters
 
 
+# Loads trucks with up to the amount of packages per truck provided
 def truck_load_packages(clusters, trucks: [Truck], amount):
     for cluster in clusters:
         for truck_index in range(len(trucks)):
@@ -141,11 +150,16 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
 
             if not cluster.is_assigned:
                 if not cluster.is_ready:
+                    # if cluster is not ready but its ready time has already passed, it can be set to ready and loaded
+                    # into truck
                     if cluster.ready_time <= truck.truck_time:
                         cluster.is_ready = True
                     else:
                         break
 
+                # If this cluster has a truck number assigned and this is not that truck, skip this truck
+                # OR
+                # If truck does not have enough space to load this package cluster, skip this truck
                 if (cluster.truck_number is not None and cluster.truck_number != truck.truck_id) or len(
                         cluster.packages) > amount - len(truck.cargo):
                     continue
@@ -153,6 +167,7 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
                 else:
                     cluster.is_assigned = True
 
+                    # Load packages in truck
                     for cluster_package in cluster.packages:
                         package = table.search(cluster_package.package_id)
                         package.delivery_status = "En route"
@@ -161,6 +176,7 @@ def truck_load_packages(clusters, trucks: [Truck], amount):
                     break
 
 
+# Delivers packages from a truck. Returns the number of miles driven
 def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
     miles = 0
 
@@ -170,11 +186,14 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
     for i in range(len(truck.cargo)):
         # Deliver trucks in order of delivery deadline and distance within those with the same delivery deadline time
 
+        # Determine minimum delivery deadline from packages that have not been delivered
         min_time = datetime.time(23, 59)
         for package in truck.cargo:
             if package.delivery_deadline < min_time and package.delivery_status == "En route":
                 min_time = package.delivery_deadline
         packages = []
+
+        # Get packages with delivery time equals to min_time
         for package in truck.cargo:
             if package.delivery_deadline == min_time and package.delivery_status == "En route":
                 packages.append(package)
@@ -189,6 +208,8 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
                                         truck.truck_time.second) + datetime.timedelta(
             seconds=time_to_deliver * 60 * 60)).time()
         print(truck.truck_time)
+
+        # Update package and truck after delivering the package
         truck.truck_time = truck_time
         package.delivery_status = "Delivered"
         package.delivered_at = truck.truck_time
@@ -204,29 +225,35 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
     return miles
 
 
+# Deliver all packages
 def deliver_packages():
+    # Trucks available. In this case only 2 trucks because there are only 2 drivers available
     trucks = [Truck(1), Truck(2)]
 
+    # Number of packages to deliver
     total_packages = 40
+    # Packages delivered so far
     total_packages_delivered = 0
-
+    # Total mileage from all trucks
     total_mileage = 0
 
-    # Set clusters
+    # Set package clusters
     clusters = set_package_clusters()
     print("Clusters set")
-    print(clusters)
 
     # Order clusters by delivery deadline
     clusters.sort(key=lambda x: x.deliver_by, reverse=False)
 
+    # Load packages into trucks
     truck_load_packages(clusters, [trucks[0]], 8)
     truck_load_packages(clusters, [trucks[1]], 16)
 
+    # Deliver each truck's first load of packages
     for truck in trucks:
         total_mileage = total_mileage + truck_deliver_packages(truck, total_mileage)
         total_packages_delivered = total_packages_delivered + len(truck.cargo)
 
+    # Until all packages have been delivered send back trucks to the HUB to load and deliver
     while total_packages_delivered < total_packages:
         if trucks[0].truck_time < trucks[1].truck_time:
             trucks[0].reset_truck()
@@ -259,11 +286,12 @@ def deliver_packages():
             total_mileage = total_mileage + truck_deliver_packages(trucks[1], total_mileage)
             total_packages_delivered = total_packages_delivered + len(trucks[1].cargo)
 
-    print(total_packages_delivered)
+    print("Number of packages delivered: " + str(total_packages_delivered))
 
-    print(total_mileage)
+    print("Total mileage driven by all trucks: " + str(total_mileage))
 
 
+# Determine the mileage driven at a specific time of the day
 def get_total_mileage_at(at_time: datetime.time):
     max_mileage_before_or_at_time = 0
 
@@ -275,8 +303,11 @@ def get_total_mileage_at(at_time: datetime.time):
     return max_mileage_before_or_at_time
 
 
+# Deliver all packages
 deliver_packages()
 
+# After all packages have been delivered, the user can enter a package id and a time and the status of such package
+# at that time will de printed, as well as the total mileage driven by all trucks until that time
 while True:
     package_id = int(input('Enter package ID (Type -1 to end program): ').strip().lower())
     print(package_id)
