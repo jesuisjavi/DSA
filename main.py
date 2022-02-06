@@ -21,8 +21,9 @@ addresses = []
 distances = []
 load_address_and_distance_data(addresses, distances)
 
-# This list will keep the total mileage driven for each package when it is delivered
-time_mileage = []
+# This list will keep a list for each truck with the mileage driven for each package when it is delivered and the time
+# when it happened, to calculate the total mileage at any point in time
+trucks_time_mileage = []
 
 
 # Calculates the distance between two addresses
@@ -213,7 +214,7 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
         truck.truck_time = truck_time
         package.delivery_status = "Delivered"
         package.delivered_at = truck.truck_time
-        time_mileage.append([package.package_id, total_mileage + miles])
+        trucks_time_mileage[truck.truck_id - 1].append([truck.truck_time, miles])
         truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
@@ -225,11 +226,12 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
     return miles
 
 
+# Trucks available. In this case only 2 trucks because there are only 2 drivers available
+trucks = [Truck(1), Truck(2)]
+
+
 # Deliver all packages
 def deliver_packages():
-    # Trucks available. In this case only 2 trucks because there are only 2 drivers available
-    trucks = [Truck(1), Truck(2)]
-
     # Number of packages to deliver
     total_packages = 40
     # Packages delivered so far
@@ -250,6 +252,7 @@ def deliver_packages():
 
     # Deliver each truck's first load of packages
     for truck in trucks:
+        trucks_time_mileage.append([])
         total_mileage = total_mileage + truck_deliver_packages(truck, total_mileage)
         total_packages_delivered = total_packages_delivered + len(truck.cargo)
 
@@ -295,14 +298,14 @@ def deliver_packages():
 
 # Determine the mileage driven at a specific time of the day
 def get_total_mileage_at(at_time: datetime.time):
-    max_mileage_before_or_at_time = 0
+    mileage = 0
 
-    for pair in time_mileage:
-        other_package = table.search(pair[0])
-        if other_package.delivered_at <= at_time and pair[1] > max_mileage_before_or_at_time:
-            max_mileage_before_or_at_time = pair[1]
+    for truck in trucks:
+        for pair in trucks_time_mileage[truck.truck_id]:
+            if pair[0] <= at_time:
+                mileage = mileage + pair[1]
 
-    return max_mileage_before_or_at_time
+    return mileage
 
 
 # Deliver all packages
