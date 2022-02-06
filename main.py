@@ -214,7 +214,7 @@ def truck_deliver_packages(truck: Truck, total_mileage: float) -> float:
         truck.truck_time = truck_time
         package.delivery_status = "Delivered"
         package.delivered_at = truck.truck_time
-        trucks_time_mileage[truck.truck_id - 1].append([truck.truck_time, miles])
+        trucks_time_mileage[truck.truck_id - 1].append([truck.truck_time, distance_between(truck.truck_address, package.delivery_address)])
         truck.truck_address = package.delivery_address
         print("Delivered: " + str(package) + " At: " + str(truck_time))
 
@@ -262,6 +262,7 @@ def deliver_packages():
             trucks[0].reset_truck()
             truck_load_packages(clusters, [trucks[0]], 16)
             miles_to_hub = distance_between(trucks[0].truck_address, "HUB")
+            trucks_time_mileage[truck.truck_id - 1].append([truck.truck_time, miles_to_hub])
             total_mileage = total_mileage + miles_to_hub
             print("Truck 1: Driving to the HUB to pick up more packages...")
             time_to_deliver = distance_between(trucks[0].truck_address, "HUB") / 18
@@ -277,6 +278,7 @@ def deliver_packages():
             trucks[1].reset_truck()
             truck_load_packages(clusters, [trucks[1]], 16)
             miles_to_hub = distance_between(trucks[1].truck_address, "HUB")
+            trucks_time_mileage[truck.truck_id - 1].append([truck.truck_time, miles_to_hub])
             total_mileage = total_mileage + miles_to_hub
             print("Truck 2: Driving to the HUB to pick up more packages...")
             time_to_deliver = distance_between(trucks[1].truck_address, "HUB") / 18
@@ -301,7 +303,7 @@ def get_total_mileage_at(at_time: datetime.time):
     mileage = 0
 
     for truck in trucks:
-        for pair in trucks_time_mileage[truck.truck_id]:
+        for pair in trucks_time_mileage[truck.truck_id - 1]:
             if pair[0] <= at_time:
                 mileage = mileage + pair[1]
 
